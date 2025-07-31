@@ -1,0 +1,3 @@
+dir "C:\Program Files\PostgreSQL" /s /b | findstr psql.exe
+psql -U postgres -h localhost -d online_retail_db    
+\dt    

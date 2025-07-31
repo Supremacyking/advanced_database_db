@@ -1,0 +1,41 @@
+{
+  "name": "apps",
+  "version": "1.0.0",
+  "description": "crud functions API development",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "keywords": [],
+  "dependencies": {
+    "body-parser": "^2.2.0",
+    "mongoose": "^8.17.0",
+    "node-pg": "^1.0.1",
+    "pg-promise": "^11.15.0",
+    "postgres": "^3.4.7"
+  },
+  "devDependencies": {
+    "compression": "^1.8.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^4.21.2",
+    "express-async-errors": "^3.1.1",
+    "express-rate-limit": "^8.0.1",
+    "helmet": "^8.1.0",
+    "joi": "^17.13.3",
+    "morgan": "^1.10.1",
+    "nodemon": "^3.1.10",
+    "pg": "^8.16.3",
+    "pg-pool": "^3.10.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  }
+}

@@ -1,0 +1,85 @@
+// routes/productRoutes.js
+const express = require('express');
+const router = express.Router();
+const productController = require('../controllers/productController');
+
+router.get('/', productController.getAllProducts);
+router.get('/:id', productController.getProductById);
+router.post('/', productController.addProduct);
+router.put('/:id', productController.updateProduct);
+router.delete('/:id', productController.deleteProduct);
+
+module.exports = router;
+
+// controllers/productController.js
+const db = require('../config/db');
+
+exports.getAllProducts = async (req, res) => {
+    try {
+        const result = await db.query('SELECT * FROM Products');
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+exports.getProductById = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await db.query('SELECT * FROM Products WHERE ProductID = $1', [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Product not found' });
+        }
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+exports.addProduct = async (req, res) => {
+    const { productID, description, unitPrice } = req.body;
+    try {
+        const result = await db.query(
+            'INSERT INTO Products (ProductID, Description, UnitPrice) VALUES ($1, $2, $3) RETURNING *',
+            [productID, description, unitPrice]
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+exports.updateProduct = async (req, res) => {
+    const { id } = req.params;
+    const { description, unitPrice } = req.body;
+    try {
+        const result = await db.query(
+            'UPDATE Products SET Description = $1, UnitPrice = $2 WHERE ProductID = $3 RETURNING *',
+            [description, unitPrice, id]
+        );
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Product not found' });
+        }
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+exports.deleteProduct = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await db.query('DELETE FROM Products WHERE ProductID = $1 RETURNING *', [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Product not found' });
+        }
+        res.status(204).send(); // No Content
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
