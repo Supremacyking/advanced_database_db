@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Monthly Sales for 2010</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Chart.js UMD build (works with global Chart variable) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.2.1/dist/chart.umd.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      max-width: 800px;
+      margin: auto;
+      background: #f8f9fa;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    #chart-container {
+      position: relative;
+      height: 400px;
+      width: 100%;
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Monthly Sales for 2010</h1>
+  <div id="chart-container">
+    <canvas id="salesChart"></canvas>
+  </div>
+
+  <script>
+    const monthLabels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const cache = {};  // 🧠 In-memory cache to reduce API calls
+
+    async function fetchMonthlySales(year, month) {
+      const key = `${year}-${month}`;
+      if (cache[key]) return cache[key];
+
+      try {
+        const res = await fetch(`/api/retail/monthly-sales?year=${year}&month=${month}`);
+        if (!res.ok) throw new Error(`API error ${res.status}`);
+        const { total_sales } = await res.json();
+        cache[key] = total_sales;
+        return total_sales;
+      } catch (e) {
+        console.error(`Failed for ${key}:`, e);
+        return 0;
+      }
+    }
+
+    async function drawChart() {
+      const year = 2010;
+      const salesData = await Promise.all(
+        monthLabels.map((_, i) => fetchMonthlySales(year, i + 1))
+      );
+
+      const ctx = document.getElementById('salesChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: monthLabels,
+          datasets: [{
+            label: `Total Sales (${year})`,
+            data: salesData,
+            backgroundColor: '#4e73df',
+            borderRadius: 6,
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: value => '$' + value.toLocaleString()
+              }
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: ctx => '$' + ctx.parsed.y.toLocaleString()
+              }
+            },
+            legend: {
+              labels: {
+                color: '#333'
+              }
+            }
+          }
+        }
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', drawChart);
+  </script>
+
+</body>
+</html>
+
